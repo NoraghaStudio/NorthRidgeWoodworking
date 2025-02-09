@@ -1,4 +1,3 @@
-// Portfolio Images Data
 const portfolioData = {
     furniture: [
         'https://images.squarespace-cdn.com/content/v1/5d35f1a3690f4000010e1524/1693609657601-6Z4EEPU5KIBIPI7RHW3N/1+Drawer-+1+Door+NS.jpg?format=2500w',
