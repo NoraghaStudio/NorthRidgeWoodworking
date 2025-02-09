@@ -1,3 +1,4 @@
+// Portfolio Images Data
 const portfolioData = {
     furniture: [
         'https://images.squarespace-cdn.com/content/v1/5d35f1a3690f4000010e1524/1693609657601-6Z4EEPU5KIBIPI7RHW3N/1+Drawer-+1+Door+NS.jpg?format=2500w',
@@ -42,14 +43,30 @@ const portfolioData = {
     ]
 };
 
+// Mobile Menu Toggle
+const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+const navLinks = document.querySelector('.nav-links');
 
-// Load Portfolio Images with Gallery View
+mobileMenuBtn.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+});
+
+// Close mobile menu when clicking a link
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+});
+
+// Load Portfolio Images with Gallery View and Touch Support
 function loadPortfolio(category = 'all') {
     const portfolioGrid = document.querySelector('.portfolio-grid');
     portfolioGrid.innerHTML = '';
 
     let images = [];
-    if (category === 'all') {
+    if ( category === 'all') {
         Object.values(portfolioData).forEach(categoryImages => {
             images = [...images, ...categoryImages];
         });
@@ -73,10 +90,12 @@ function loadPortfolio(category = 'all') {
     const prevBtn = document.createElement('button');
     prevBtn.className = 'gallery-nav prev';
     prevBtn.innerHTML = '❮';
+    prevBtn.setAttribute('aria-label', 'Previous image');
     
     const nextBtn = document.createElement('button');
     nextBtn.className = 'gallery-nav next';
     nextBtn.innerHTML = '❯';
+    nextBtn.setAttribute('aria-label', 'Next image');
 
     gallery.appendChild(prevBtn);
     gallery.appendChild(imageContainer);
@@ -85,10 +104,37 @@ function loadPortfolio(category = 'all') {
 
     let currentIndex = 0;
     const totalItems = images.length;
+    let touchStartX = 0;
+    let touchEndX = 0;
 
     function updateGallery() {
         imageContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
     }
+
+    // Touch events for swipe
+    imageContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+    }, false);
+
+    imageContainer.addEventListener('touchmove', (e) => {
+        touchEndX = e.touches[0].clientX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 5) { // Prevent vertical scrolling when swiping
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    imageContainer.addEventListener('touchend', () => {
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) { // Minimum swipe distance
+            if (diff > 0) { // Swipe left
+                currentIndex = (currentIndex + 1) % totalItems;
+            } else { // Swipe right
+                currentIndex = (currentIndex - 1 + totalItems) % totalItems;
+            }
+            updateGallery();
+        }
+    });
 
     prevBtn.addEventListener('click', () => {
         currentIndex = (currentIndex - 1 + totalItems) % totalItems;
@@ -116,8 +162,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
+            const headerOffset = 80;
+            const elementPosition = target.offsetTop;
+            const offsetPosition = elementPosition - headerOffset;
+
             window.scrollTo({
-                top: target.offsetTop - 80,
+                top: offsetPosition,
                 behavior: 'smooth'
             });
         }
